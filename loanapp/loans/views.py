@@ -8,7 +8,7 @@ from loanapp import db
 from datetime import datetime
 
 
-loans_blp = Blueprint("loans", __name__)
+loans_blp = Blueprint("loans", __name__, url_prefix="/loans")
 
 @loans_blp.route("/get-interest-rates", methods=["GET"])
 def get_interest_rates():
@@ -57,13 +57,19 @@ def loan_request(current_user):
     if not current_user.agent:
         return jsonify({"message": "Cannot perform the action."})
 
-    application_id = request.get_json()['application_id']
-    user_id = request.get_json()['user_id']
+    try:
+        application_id = request.get_json()['application_id']
+        user_id = request.get_json()['user_id']
+    except:
+        return jsonify({"message": "Invalid input."}), 400
 
     userappl = Application.query.filter_by(
         id=application_id,
         user_id=user_id
     ).first()
+
+    if not userappl:
+        return jsonify({"message": "Invalid application."})
 
     principal = userappl.amount
     tenure = userappl.tenure
@@ -133,7 +139,7 @@ def approve_loan(current_user):
     except:
         return jsonify({"message": "Invalid input"}), 400
 
-    loan = Loan.query.filter_by(id=loan_id, user_id=user_id)
+    loan = Loan.query.filter_by(id=loan_id, user_id=user_id).first()
 
     if not loan:
         return jsonify({"message": "Invalid loan ID."})
