@@ -33,6 +33,8 @@ def token_required(f):
 
 @users_blp.route("", methods=["POST"])
 def create_user():
+    """ Create a user with name and password. """
+
     data = request.get_json()
 
     if User.query.filter_by(name=data["name"]).first():
@@ -40,7 +42,6 @@ def create_user():
 
     hashed_passwd = generate_password_hash(data["password"], method="sha256")
     new_user = User(name=data["name"], password=hashed_passwd)
-    new_user.setAdmin()
     db.session.add(new_user)
     db.session.commit()
 
@@ -50,6 +51,8 @@ def create_user():
 @users_blp.route("", methods=["GET"])
 @token_required
 def get_all_users(current_user):
+    """ Get all users. Can be done by admin and agent. """
+
     if current_user.admin or current_user.agent:
         users = User.query.all()
 
@@ -59,7 +62,6 @@ def get_all_users(current_user):
             user_data = {}
             user_data["id"] = user.id
             user_data["name"] = user.name
-            user_data["password"] = user.password
             user_data["admin"] = user.admin
             user_data["agent"] = user.agent
             output.append(user_data)
@@ -72,6 +74,8 @@ def get_all_users(current_user):
 @users_blp.route("/<user_id>", methods=["GET"])
 @token_required
 def get_this_user(current_user, user_id):
+    """ Get a particular user. Can be done by admin and agent. """
+
     if current_user.admin or current_user.agent:
         user = User.query.get(user_id)
 
@@ -98,6 +102,7 @@ def get_this_user(current_user, user_id):
 @users_blp.route("/<user_id>", methods=["PUT"])
 @token_required
 def promote_to_agent(current_user, user_id):
+    """ Promote a user to agent. Can be done by admin only. """
 
     if not current_user.admin:
         return jsonify({"message": "Cannot perform the action"})
@@ -116,6 +121,8 @@ def promote_to_agent(current_user, user_id):
 @users_blp.route("/<user_id>", methods=["DELETE"])
 @token_required
 def delete_this_user(current_user, user_id):
+    """ Delete a user. Can be done by admin and agent. """
+
     if current_user.admin or current_user.agent:
         user = User.query.get(user_id)
 
