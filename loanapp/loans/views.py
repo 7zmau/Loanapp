@@ -12,6 +12,8 @@ loans_blp = Blueprint("loans", __name__, url_prefix="/loans")
 
 @loans_blp.route("/get-interest-rates", methods=["GET"])
 def get_interest_rates():
+    """ Get interest rate for the tenure selected."""
+
     try:
         tenure = int(request.get_json()["tenure"])
     except:
@@ -27,6 +29,9 @@ def get_interest_rates():
 
 @loans_blp.route("/get-loan-info", methods=["GET"])
 def get_loan_info():
+    """ Calculate EMI & total interest to be paid for
+        the selected loan amount and tenure. """
+
     try:
         principal = int(request.get_json()["amount"])
         tenure = int(request.get_json()["tenure"])
@@ -50,9 +55,43 @@ def get_loan_info():
     return jsonify({"loan_info": output})
 
 
-@loans_blp.route("/", methods=["POST"])
+@loans_blp.route("", methods=["GET"])
+@token_required
+def get_all_loans(current_user):
+    """ View all loans - NEW, APPROVED, REJECTED. """
+
+    if not current_user.agent or not current_user.admin:
+        loans = Loan.query.filter_by(user_id=current_user.id)
+        if not loans:
+            return jsonify({"loans": []})
+    else:
+        loans = Loan.query.all()
+
+    output = []
+
+    for loan in loans:
+        loan_data = {}
+        loan_data["id"] = loan.id
+        loan_data["user_id"] = loan.user_id
+        loan_data["principal"] = loan.principal
+        loan_data["tenure"] = loan.tenure
+        loan_data["interest"] = loan.interest
+        loan_data["interest_rate"] = loan.interest_rate
+        loan_data["emi"] = loan.emi
+        loan_data["total"] = loan.total
+        loan_data["loan_state"] = loan.loan_state
+        loan_data["request_date"] = loan.request_date
+        loan_data["start_date"] = loan.start_date
+        output.append(loan_data)
+
+    return jsonify({"loans": output})
+
+
+@loans_blp.route("/request", methods=["POST"])
 @token_required
 def loan_request(current_user):
+    """ Request a loan. Loan can be requested only by an agent.
+        Input is Application ID and User ID."""
 
     if not current_user.agent:
         return jsonify({"message": "Cannot perform the action."})
@@ -96,40 +135,12 @@ def loan_request(current_user):
     return jsonify({"message": "New loan requested."})
 
 
-@loans_blp.route("/", methods=["GET"])
-@token_required
-def get_all_loans(current_user):
-
-    if not current_user.agent or not current_user.admin:
-        loans = Loan.query.filter_by(user_id=current_user.id)
-        if not loans:
-            return jsonify({"loans": []})
-    else:
-        loans = Loan.query.all()
-
-    output = []
-
-    for loan in loans:
-        loan_data = {}
-        loan_data["id"] = loan.id
-        loan_data["user_id"] = loan.user_id
-        loan_data["principal"] = loan.principal
-        loan_data["tenure"] = loan.tenure
-        loan_data["interest"] = loan.interest
-        loan_data["interest_rate"] = loan.interest_rate
-        loan_data["emi"] = loan.emi
-        loan_data["total"] = loan.total
-        loan_data["loan_state"] = loan.loan_state
-        loan_data["request_date"] = loan.request_date
-        loan_data["start_date"] = loan.start_date
-        output.append(loan_data)
-
-    return jsonify({"loans": output})
-
-
-@loans_blp.route("/", methods=["PUT"])
+@loans_blp.route("/approve", methods=["PUT"])
 @token_required
 def approve_loan(current_user):
+    """ Approve a loan request. Can be done by an admin only.
+        Input is the Loan ID and User ID. """
+
     if not current_user.admin:
         return jsonify({"message": "Cannot perform the action."})
 
@@ -137,7 +148,7 @@ def approve_loan(current_user):
         loan_id = request.get_json()["loan_id"]
         user_id = request.get_json()["user_id"]
     except:
-        return jsonify({"message": "Invalid input"}), 400
+        return jsonify({"message": "Invalid input."}), 400
 
     loan = Loan.query.filter_by(id=loan_id, user_id=user_id).first()
 
@@ -159,9 +170,11 @@ def approve_loan(current_user):
     return jsonify({"message": "Cannot approve loan."})
 
 
-@loans_blp.route("/request-agent", methods=["POST"])
+@loans_blp.route("/apply", methods=["POST"])
 @token_required
 def loan_request_user(current_user):
+    """ Apply for a loan. Can be done by the user. Creates
+        an Application object which can then be reviewed by an agent. """
 
     data = request.get_json()
 
@@ -174,9 +187,10 @@ def loan_request_user(current_user):
     return jsonify({"message": "Agent will send a loan request soon."})
 
 
-@loans_blp.route("/view-requests", methods=["GET"])
+@loans_blp.route("/view-applications", methods=["GET"])
 @token_required
-def view_requests(current_user):
+def view_applications(current_user):
+    """ View loan applications. """
 
     if not current_user.agent:
         return jsonify({"message": "Cannot perform this action."})
@@ -200,6 +214,8 @@ def view_requests(current_user):
 @loans_blp.route("/edit/<int:loan_id>", methods=["PUT"])
 @token_required
 def edit_loan(current_user, loan_id):
+    """ Edit a loan. Input is the new loan amount and tenure.
+       Loan cannot be edited if already approved. """
 
     if not current_user.agent:
         return jsonify({"message": "Cannot perform this action."})
