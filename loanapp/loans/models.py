@@ -43,7 +43,8 @@ class Application(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     amount = db.Column(db.Integer)
     tenure = db.Column(db.Integer)
-    request_date = db.Column(db.DateTime(timezone=True), default=datetime.utcnow)
+    requested = db.Column(db.Boolean, default=False)
+    application_date = db.Column(db.DateTime(timezone=True), default=datetime.utcnow)
 
     def __init__(self, user_id, amount, tenure):
         self.user_id = user_id

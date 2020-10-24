@@ -91,7 +91,7 @@ def get_all_loans(current_user):
 @token_required
 def loan_request(current_user):
     """ Request a loan. Loan can be requested only by an agent.
-        Input is Application ID and User ID."""
+        Input is Application ID and User ID. """
 
     if not current_user.agent:
         return jsonify({"message": "Cannot perform the action."})
@@ -109,6 +109,9 @@ def loan_request(current_user):
 
     if not userappl:
         return jsonify({"message": "Invalid application."})
+
+    if userappl.requested:
+        return jsonify({"message": "Application already requested."})
 
     principal = userappl.amount
     tenure = userappl.tenure
@@ -128,6 +131,7 @@ def loan_request(current_user):
         user_id=user_id
     )
     new_loan_request.setLoanState("NEW")
+    userappl.requested = True
 
     db.session.add(new_loan_request)
     db.session.commit()
@@ -205,7 +209,8 @@ def view_applications(current_user):
         application_data["user_id"] = application.user_id
         application_data["amount"] = application.amount
         application_data["tenure"] = application.tenure
-        application_data["request_date"] = application.request_date
+        application_data["application_date"] = application.application_date
+        application_data["requested"] = application.requested
         output.append(application_data)
 
     return jsonify({"applications": output})

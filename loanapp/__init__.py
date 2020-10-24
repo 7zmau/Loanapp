@@ -1,6 +1,7 @@
 from os import environ, path
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 
 app = Flask(__name__)
 
@@ -14,6 +15,7 @@ app.config.from_mapping(
 )
 
 db = SQLAlchemy(app)
+Migrate(app, db)
 
 from loanapp.users.views import users_blp
 from loanapp.loans.views import loans_blp
