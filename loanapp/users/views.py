@@ -99,7 +99,7 @@ def get_this_user(current_user, user_id):
     return jsonify({"message": "Cannot perform the action."})
 
 
-@users_blp.route("/<user_id>", methods=["PUT"])
+@users_blp.route("/<user_id>", methods=["PATCH"])
 @token_required
 def promote_to_agent(current_user, user_id):
     """ Promote a user to agent. Can be done by admin only. """
