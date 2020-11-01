@@ -5,7 +5,7 @@ class User(db.Model):
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(70))
+    name = db.Column(db.String(70), unique=True)
     password = db.Column(db.String(80))
     applications = db.relationship('Application', backref='user', lazy='dynamic', foreign_keys='Application.user_id')
     loans = db.relationship('Loan', backref='user', lazy='dynamic', foreign_keys='Loan.user_id')

@@ -143,7 +143,7 @@ def login():
 
     if not auth or not auth.username or not auth.password:
         return make_response(
-            "Could not verify",
+            "Could not verify. No username/password",
             401,
             {"WWW-Authenticate": 'Basic realm="Login required"'},
         )
@@ -152,7 +152,7 @@ def login():
 
     if not user:
         return make_response(
-            "Could not verify.",
+            "Could not verify. No such user.",
             401,
             {"WWW-Authenticate": 'Basic realm="Login required"'},
         )
