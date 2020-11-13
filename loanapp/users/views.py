@@ -5,6 +5,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 import jwt
 import datetime
+from flask.cli import with_appcontext
+import click
 
 users_blp = Blueprint("users", __name__, url_prefix="/users")
 

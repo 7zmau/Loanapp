@@ -2,6 +2,7 @@ from os import environ, path, makedirs
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from loanapp import commands
 
 app = Flask(__name__, instance_relative_config=True)
 
@@ -25,3 +26,5 @@ from loanapp.loans.views import loans_blp
 
 app.register_blueprint(users_blp)
 app.register_blueprint(loans_blp)
+
+app.cli.add_command(commands.create_admin_command)
