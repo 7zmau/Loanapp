@@ -28,3 +28,4 @@ app.register_blueprint(users_blp)
 app.register_blueprint(loans_blp)
 
 app.cli.add_command(commands.create_admin_command)
+app.cli.add_command(commands.init_database)
