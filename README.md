@@ -1,5 +1,6 @@
 # Loanapp API
-
+### Create docker image
+`docker build -t loanapp .`
 ### Run the tests
  `docker exec <container-id> python test.py`
 ####  To get the Container ID
