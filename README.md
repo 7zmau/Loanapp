@@ -1,10 +1,5 @@
 # Loanapp API
 
-This image contains the Loanapp API web app.
-
-Run it locally with the following command: <br><br>
-`docker run -dp 3500:80 prin7t/loanapp`<br><br>
-Then open a browser at http://localhost:3500<br>
 ### Run the tests
  `docker exec <container-id> python test.py`
 ####  To get the Container ID
